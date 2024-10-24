@@ -1,10 +1,30 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Банковские транзакции</title>
 </head>
 <body>
-$END$
+    <h1>Форма транзакции</h1>
+    <form id="transaction-form">
+        <label for="account_id">ID счета:</label><br>
+        <input type="number" id="account_id" name="account_id" placeholder="Введите ID счета"><br><br>
+
+        <label for="amount">Сумма:</label><br>
+        <input type="number" step="0.01" id="amount" name="amount" placeholder="Введите сумму"><br><br>
+
+        <label for="currency">Валюта (USD/EUR):</label><br>
+        <input type="text" id="currency" name="currency" placeholder="Введите валюту"><br><br>
+
+        <label for="transaction_type">Тип транзакции (debit/credit):</label><br>
+        <input type="text" id="transaction_type" name="transaction_type" placeholder="Введите тип транзакции"><br><br>
+
+        <input type="submit" value="Отправить транзакцию">
+    </form>
+
+    <p id="response"></p>
+
+    <script src="app.js"></script>
 </body>
 </html>
