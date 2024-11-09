@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+
+  redis:
+    image: redis:6.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_DB: banking
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  valute_converter_service:
+    build:
+      context: ./bank
+      dockerfile: valute_converter_service/Dockerfile
+    container_name: valute_converter_service
+    environment:
+      - VALUTE_QUEUE=currency_conversion_queue
+      - REDIS_HOST=redis
+    depends_on:
+      - rabbitmq
+      - redis
+    networks:
+      - bank-network
+
+  transaction_service:
+    build:
+      context: ./bank
+      dockerfile: transaction_service/Dockerfile
+    container_name: transaction_service
+    environment:
+      - TRANSACTION_QUEUE=transaction_queue
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=banking
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=123
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      - bank-network
+
+  transaction_manager_service:
+    build:
+      context: ./bank
+      dockerfile: transaction_manager_service/Dockerfile
+    container_name: transaction_manager_service
+    environment:
+      - TRANSACTION_QUEUE=transaction_queue
+      - VALUTE_QUEUE=currency_conversion_queue
+      - CURRENCY_CONVERSION_SERVICE_HOST=valute_converter_service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+      - transaction_service
+      - valute_converter_service
+    networks:
+      - bank-network
+
+volumes:
+  postgres_data:
+
+networks:
+  bank-network:
